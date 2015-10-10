@@ -27,6 +27,8 @@ def get_tweets(hashtag, tweetCount):
 	        text = re.sub('(RT|RT:|RT :|RT  :)', '', text)
 	        text = re.sub('b\'', '', text)
 	        text = re.sub(':|\\n', '', text)
+	        text = re.sub('\\.*', '', text)
+	        text = re.sub('&amp;', '', text)
 	        tweets.append(text)
 	return tweets
 
