@@ -3,12 +3,11 @@ from twython import Twython
 from collections import Counter
 import sys
 import re
-import markovify
 
 client_args = {
-  "headers": {
+	"headers": {
 	"accept-charset": "utf-8"
-  }
+	}
 }
 
 APP_KEY = 'BDFjwtDbPqCT07N6k4h6yaK9D'  # Customer Key here
@@ -18,37 +17,40 @@ ACCESS_SECRET = 'dzo6CLq2JY6WNSooINBEl0yH5AYpdHcYq12Y2CXKALN7I'
 
 def get_tweets(hashtag, tweetCount):
 	twitter = Twython(APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
-	highestId = 0
-	wordCnt = Counter()
-	corpora = ''
 	tweets = []
-	while tweetCount > 0:
-		results = twitter.search(q=hashtag, count=tweetCount, lang='en', since_id=highestId)
-		if tweetCount >= 100:
-			tweetCount -= 100
+	corpora = ''
+	wordCnt = Counter()
+	MAX_ATTEMPTS = 15
+	for i in range(0, MAX_ATTEMPTS):
+		if tweetCount <= len(tweets):
+			break # found all tweets
+
+		if (i == 0):
+			results = twitter.search(q=hashtag, count=100, lang='en')
 		else:
-			tweetCount = 0
-		p = re.compile('[A-Za-z0-9]')
-		for tweet in results['statuses']:
-				if tweet['id'] > highestId:
-					highestId = tweet['id']
-				text = re.sub('@[A-Za-z]+', '', str(tweet['text'].encode(sys.stdout.encoding, errors='ignore')))
-				text = re.sub('(RT|RT:|RT :|RT  :)', '', text)
-				text = re.sub('b\'', '', text)
-				text = re.sub('\\n', '', text)
-				text = re.sub('\w\\?\\[A-Za-z0-9]* ', '', text)
-				text = re.sub('&amp;', '', text)
-				text = re.sub('\\*\\n/g', '', text)
-				text = re.sub('\s\s+/g', ' ', text)
-				text = re.sub('https?://\w*\.co/\w*', '', text)
-				tweets.append(text)
-				corpora += ' '
-				corpora += text
-				for word in text.split():
-					wordCnt[word] += 1
+			results = twitter.search(q=hashtag, count=100, lang='en', include_entities='true', max_id=next_max_id)
+
+		for result in results['statuses']:
+			tweet = result['text']
+			tweet = re.sub('@[A-Za-z]+', '', str(result['text'].encode(sys.stdout.encoding, errors='ignore')))
+			tweet = re.sub('(RT|RT:|RT :|RT  :)', '', tweet)
+			tweet = re.sub('b\'', '', tweet)
+			tweet = re.sub('\\n', '', tweet)
+			tweet = re.sub('\w\\?\\[A-Za-z0-9]* ', '', tweet)
+			tweet = re.sub('&amp;', '', tweet)
+			tweet = re.sub('\\n', '', tweet)
+			tweet = re.sub('\\*\\n/g', '', tweet)
+			tweet = re.sub('\s\s+/g', ' ', tweet)
+			tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
+			tweets.append(tweet)
+			corpora += tweet
+			for word in tweet.split():
+				wordCnt[word] += 1
+
+		try:
+			next_results_url_params = results['search_metadata']['next_results']
+			next_max_id = next_results_url_params.split('max_id=')[1].split('&')[0]
+		except:
+			break
 
 	return tweets, wordCnt, corpora
-
-if __name__ == '__main__':
-	for tweet in get_tweets('London', 200):
-		print(tweet)
