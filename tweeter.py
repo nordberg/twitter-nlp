@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from twython import Twython
+from collections import Counter
 import sys
 import re
 
 client_args = {
   "headers": {
-    "accept-charset": "utf-8"
+	"accept-charset": "utf-8"
   }
 }
 
@@ -15,23 +16,28 @@ ACCESS_TOKEN = '335495642-WkhVdvjhipAWAbbqHrK0aWcOY7fIUC1ARynhEbit'
 ACCESS_SECRET = 'dzo6CLq2JY6WNSooINBEl0yH5AYpdHcYq12Y2CXKALN7I'
 
 def main():
-	for tweet in get_tweets('london', 200):
-		print(tweet)
+	get_tweets('london', 200)
+
+def get_split_tweets(hashtag, n):
+ return [t.split() for t in tweeter.get_tweets(hashtag,n)]
 
 def get_tweets(hashtag, tweetCount):
 	twitter = Twython(APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
 	results = twitter.search(q=hashtag, count=tweetCount)
+	wordCnt = Counter()
 	tweets = []
 	for tweet in results['statuses']:
-	        text = re.sub('@[A-Za-z]+', '', str(tweet['text'].encode(sys.stdout.encoding, errors='replace')))
-	        text = re.sub('(RT|RT:|RT :|RT  :)', '', text)
-	        text = re.sub('b\'', '', text)
-	        text = re.sub(':|\\n', '', text)
-	        text = re.sub('\\[A-Za-z0-9]* ', '', text)
-	        text = re.sub('&amp;', '', text)
-	        text = re.sub('\\n', '', text)
-	        text = re.sub('\s\s+/g', ' ', text)
-	        tweets.append(text)
-	return tweets
+			text = re.sub('@[A-Za-z]+', '', str(tweet['text'].encode(sys.stdout.encoding, errors='replace')))
+			text = re.sub('(RT|RT:|RT :|RT  :)', '', text)
+			text = re.sub('b\'', '', text)
+			text = re.sub(':|\\n', '', text)
+			text = re.sub('\\[A-Za-z0-9]* ', '', text)
+			text = re.sub('&amp;', '', text)
+			text = re.sub('\\n', '', text)
+			text = re.sub('\s\s+/g', ' ', text)
+			tweets.append(text)
+			for word in text.split():
+				wordCnt[word] += 1
+	return tweets, wordCnt
 
 main()
