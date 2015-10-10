@@ -15,7 +15,7 @@ ACCESS_TOKEN = '335495642-WkhVdvjhipAWAbbqHrK0aWcOY7fIUC1ARynhEbit'
 ACCESS_SECRET = 'dzo6CLq2JY6WNSooINBEl0yH5AYpdHcYq12Y2CXKALN7I'
 
 def main():
-	for tweet in get_tweets('marcus', 200):
+	for tweet in get_tweets('london', 200):
 		print(tweet)
 
 def get_tweets(hashtag, tweetCount):
@@ -27,8 +27,10 @@ def get_tweets(hashtag, tweetCount):
 	        text = re.sub('(RT|RT:|RT :|RT  :)', '', text)
 	        text = re.sub('b\'', '', text)
 	        text = re.sub(':|\\n', '', text)
-	        text = re.sub('\\.*', '', text)
+	        text = re.sub('\\[A-Za-z0-9]* ', '', text)
 	        text = re.sub('&amp;', '', text)
+	        text = re.sub('\\n', '', text)
+	        text = re.sub('\s\s+/g', ' ', text)
 	        tweets.append(text)
 	return tweets
 
