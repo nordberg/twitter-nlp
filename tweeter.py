@@ -33,17 +33,19 @@ def get_tweets(hashtag, tweetCount):
 
 		for result in results['statuses']:
 			tweet = result['text']
-			tweet = re.sub('@[A-Za-z]+', '', str(result['text'].encode(sys.stdout.encoding, errors='ignore')))
-			tweet = re.sub('(RT|RT:|RT :|RT  :)', '', tweet)
-			tweet = re.sub('b\'', '', tweet)
-			tweet = re.sub('\\n', '', tweet)
-			tweet = re.sub('\w\\?\\[A-Za-z0-9]* ', '', tweet)
-			tweet = re.sub('&amp;', '', tweet)
-			tweet = re.sub('\\n', '', tweet)
-			tweet = re.sub('\\*\\n/g', '', tweet)
-			tweet = re.sub('\s\s+/g', ' ', tweet)
+			tweet = re.sub('@[A-Za-z]+', ' ', str(result['text'].encode(sys.stdout.encoding, errors='ignore')))
+			tweet = re.sub('(RT|RT:|RT :|RT  :)', ' ', tweet)
+			tweet = re.sub('b\'', ' ', tweet)
+			tweet = re.sub('\w\\?\\[A-Za-z0-9]* ', ' ', tweet)
+			tweet = re.sub('&amp;', ' ', tweet)
+			tweet = re.sub('\\n', ' ', tweet)
+			tweet = re.sub(':', ' ', tweet)
+			tweet = re.sub('\\*\\n/g', ' ', tweet)
 			tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
-			tweets.append(tweet)
+			tweet = re.sub('b"', ' ', tweet)
+			tweet = re.sub('\s\s+', ' ', tweet)
+
+			tweets.append(tweet.strip())
 			corpora += tweet
 			for word in tweet.split():
 				wordCnt[word] += 1
