@@ -55,7 +55,3 @@ def get_tweets(hashtag, tweetCount):
 			break
 
 	return tweets, wordCnt, corpora
-
-a, b, c = get_tweets('lego', 150)
-
-print(len(a))

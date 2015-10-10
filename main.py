@@ -43,7 +43,7 @@ def generate_tweet(model,n):
 
 if __name__ == '__main__':
     n = 3
-    tweets = get_split_tweets("football",1000)
+    tweets = get_split_tweets("football",150)
     model = create_model(tweets,n)
     for i in range(10):
         print(generate_tweet(model,n))
