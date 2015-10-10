@@ -1,7 +1,7 @@
 import tweeter
 
 def get_split_tweets(hashtag, n):
-	return [t.split() for t in tweeter.get_tweets(hashtag,n)]
+	return [t.split() for t in tweeter.get_tweets(hashtag,n)[0]]
 
 def find_ngrams(input_list,n):
   bigram_list = []
