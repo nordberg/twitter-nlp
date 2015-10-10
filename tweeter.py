@@ -20,15 +20,16 @@ def get_tweets(hashtag, tweetCount):
 	tweets = []
 	corpora = ''
 	wordCnt = Counter()
+	# Max amount of queries is 15
 	MAX_ATTEMPTS = 15
 	for i in range(0, MAX_ATTEMPTS):
 		if tweetCount <= len(tweets):
 			break # found all tweets
 
 		if (i == 0):
-			results = twitter.search(q=hashtag, count=100, lang='en')
+			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en')
 		else:
-			results = twitter.search(q=hashtag, count=100, lang='en', include_entities='true', max_id=next_max_id)
+			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en', include_entities='true', max_id=next_max_id)
 
 		for result in results['statuses']:
 			tweet = result['text']
@@ -54,3 +55,7 @@ def get_tweets(hashtag, tweetCount):
 			break
 
 	return tweets, wordCnt, corpora
+
+a, b, c = get_tweets('lego', 150)
+
+print(len(a))
