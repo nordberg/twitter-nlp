@@ -17,10 +17,7 @@ ACCESS_SECRET = 'dzo6CLq2JY6WNSooINBEl0yH5AYpdHcYq12Y2CXKALN7I'
 
 def main():
 	get_tweets('london', 200)
-
-def get_split_tweets(hashtag, n):
- return [t.split() for t in tweeter.get_tweets(hashtag,n)]
-
+	
 def get_tweets(hashtag, tweetCount):
 	twitter = Twython(APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
 	results = twitter.search(q=hashtag, count=tweetCount)
