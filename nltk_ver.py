@@ -1,12 +1,10 @@
 import nltk
 import os
 import random
-import language_check
 import sys
 import re
 
-LOWER_CASE = True
-tool = language_check.LanguageTool('en-US')
+LOWER_CASE = False
 
 def find_ngrams(input_list,n):
   ngram_list = []
@@ -44,6 +42,7 @@ def extra_trim(tweet):
 
 def generate_tweet(hashtag):
     avoid_copy = True
+    check_length = 5
     n = 2
     tweets = [extra_trim(t) for t in read_file(hashtag)]
     if LOWER_CASE: tweets = [t.lower() for t in tweets]
@@ -52,9 +51,9 @@ def generate_tweet(hashtag):
     last = [None]*n
     new_word = None
     sentence = []
-    for i in range(25):
+    for i in range(50):
         as_tuple = tuple(last)
-        choices = cfd[as_tuple].most_common(20)
+        choices = cfd[as_tuple].most_common(5)
         if len(choices) == 0:
             break
 
@@ -62,9 +61,11 @@ def generate_tweet(hashtag):
         for j in range(20):
             new_word = random.choice(choices)[0]
             if new_word == None:
+                if choices[0][0] == None:
+                    continue
                 if not is_copy(" ".join(sentence),tweets):
                     break
-            elif not is_copy(" ".join(sentence+[new_word]),tweets):
+            elif not is_copy(" ".join((sentence+[new_word])[-check_length:]),tweets):
                 break
 
         #End of tweet was selected, abort appending
@@ -75,13 +76,16 @@ def generate_tweet(hashtag):
         last.append(new_word)
 
     sent = " ".join(sentence)
-    matches = tool.check(sent)
-    corr_sent = language_check.correct(sent, matches)
+    corr_sent = sent
     double = corr_sent.count('"')
+    lpar = corr_sent.count('(')
+    rpar = corr_sent.count(')')
     #single = corr_sent.count("'")
-    if double == 1: corr_sent = re.sub("'","".corr_sent)
+    if double == 1: corr_sent = re.sub('"',"".corr_sent)
+    if lpar == 1: corr_sent = re.sub('(',"".corr_sent)
+    if rpar == 1: corr_sent = re.sub(')',"".corr_sent)
     #if single == 1: corr_sent = re.sub('"',"")
-    if corr_sent[-1] != ".":
+    if corr_sent[-1] not in [".",",","?","!"] :
         corr_sent += "."
     print(is_copy(sent,tweets),len(sent))
     print(sent)
@@ -100,5 +104,5 @@ def read_file(hashtag):
     return lines
 
 for i in range(10):
-    generate_tweet("obama")
+    generate_tweet("weird")
     print()
