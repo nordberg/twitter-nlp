@@ -4,6 +4,12 @@ from collections import Counter
 import sys
 import re
 
+
+# Collects tweets for a specific hashtag from Twitter and parses them to 
+# remove some special characters
+# This method is used by toFile.py
+
+
 client_args = {
 	"headers": {
 	"accept-charset": "utf-8"
@@ -39,17 +45,22 @@ def get_tweets(hashtag, tweetCount):
 			tweet = re.sub('\w\\?\\[A-Za-z0-9]* ', ' ', tweet)
 			tweet = re.sub('&amp;', ' ', tweet)
 			tweet = re.sub('\\n', ' ', tweet)
+			tweet = re.sub('\n', ' ', tweet)
+			tweet = tweet.replace("\n", ' ') #Does the work for some reason
+			tweet = tweet.replace("\\n", ' ') #Does the work for some reason
 			#tweet = re.sub(':', ' ', tweet)
 			tweet = re.sub('\\*\\n/g', ' ', tweet)
-			tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
+			#tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
+			tweet = re.sub('http[^\s]*', '', tweet) #matches all words that starts with http
 			tweet = re.sub('b"', ' ', tweet)
 			tweet = re.sub('\s\s+', ' ', tweet)
 			
-
+			
 			if(tweet[-1]=='\'' or tweet[-1]=='"'):
 				tweet = tweet[:len(tweet)-1]
 			if(tweet[1] == ':') :
 				tweet = tweet[2:]
+			
 			tweets.append(tweet.strip())
 			corpora += tweet
 			for word in tweet.split():
