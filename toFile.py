@@ -24,4 +24,5 @@ if __name__ == '__main__':
 	for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
 		if tweet + '\n' not in open(filename).read() :
 			f.write(tweet + '\n')
+		f = open(filename,'a')
 	f.close()
