@@ -44,7 +44,10 @@ def get_tweets(hashtag, tweetCount):
 			tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
 			tweet = re.sub('b"', ' ', tweet)
 			tweet = re.sub('\s\s+', ' ', tweet)
+			
 
+			if(tweet[-1]=='\'' or tweet[-1]=='"'):
+				tweet = tweet[:len(tweet)-1]
 			tweets.append(tweet.strip())
 			corpora += tweet
 			for word in tweet.split():
@@ -57,3 +60,4 @@ def get_tweets(hashtag, tweetCount):
 			break
 
 	return tweets, wordCnt, corpora
+	

@@ -1,9 +1,28 @@
 import tweeter
+import os.path
+import sys
+
+
 
 if __name__ == '__main__':
-	hashtag = "obama"
-	numberOfTweets = 2000
-	f = open('tweet_' + hashtag,'w')
+	if len(sys.argv)>1 :
+		hashtag = sys.argv[1]
+	else :
+		hashtag = "obama"
+	numberOfTweets = 1500
+	
+	
+	filename = 'tweet_' + hashtag
+	
+	
+	if os.path.isfile(filename):
+		f = open(filename,'a') #append to file
+	else :
+		f = open(filename,'w') #create new file and write to
+	
+
 	for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
-		f.write(tweet + '\n')
+		if tweet + '\n' not in open(filename).read() :
+			f.write(tweet + '\n')
+		f = open(filename,'a')
 	f.close()
