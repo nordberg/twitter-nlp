@@ -30,8 +30,9 @@ if __name__ == '__main__':
 		f = open(filename,'w') #create new file and write to
 	
 
-	for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
-		if tweet + '\n' not in open(filename).read() :
-			f.write(tweet + '\n')
-		f = open(filename,'a')
+	while True:
+		for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
+			if tweet + '\n' not in open(filename).read() :
+				f.write(tweet + '\n')
+			f = open(filename,'a')
 	f.close()
