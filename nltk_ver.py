@@ -7,10 +7,10 @@ import re
 LOWER_CASE = True
 
 def find_ngrams(input_list,n,none_fill = True):
-    '''
-    Returns a list of ((n-gram),next_gram) for the input string.
-    Also adds ngrams containing None for start and end of sentences  
-    '''
+  '''
+  Returns a list of ((n-gram),next_gram) for the input string.
+  Also adds ngrams containing None for start and end of sentences  
+  '''
   ngram_list = []
   try:
       if none_fill:
