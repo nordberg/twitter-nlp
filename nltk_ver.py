@@ -30,7 +30,8 @@ def find_ngrams(input_list,n,none_fill = True):
 
 def create_model(tweets,n):
     ''' Merges all n-grams of all tweets'''
-    split_t = [t.split() for t in tweets]
+    split_t = [t.split() for t in tweets if "\\" not in t and "http" not in t]
+
     model = []
     for tweet in split_t:
         grams = find_ngrams(tweet,n)
@@ -49,14 +50,14 @@ def extra_trim(tweet):
     '''Makes small hacks on the tweets'''
     if(tweet[-1] == "'"):
         tweet = tweet[:-1]
-    tweet = re.sub("\n"," ",tweet)
+    tweet = re.sub("\\n"," ",tweet)
     return tweet
 
 def generate_tweet(hashtag):
 
     # Settings
     avoid_copy = True
-    check_length = 6
+    check_length = 4
     n = 2
 
     # Gather the tweets
@@ -89,8 +90,8 @@ def generate_tweet(hashtag):
 
             # Special case - only allow sentences to beging with
             # alphabetical characters or hashtags
-            if len(sentence) == 0 and not re.sub("#","",new_word).isalpha():
-                continue
+            if len(sentence) == 0 and re.sub("#","",new_word).isalpha():
+                break
 
             # When the substring length for plagiary check is reached
             # start check the sentence.
@@ -119,26 +120,27 @@ def generate_tweet(hashtag):
     sent = " ".join(sentence)
 
     # Make some symbol correction
-    corr_sent = sent
-    double = corr_sent.count('"')
-    lpar = corr_sent.count('(')
-    rpar = corr_sent.count(')')
-    #single = corr_sent.count("'")
-    if double == 1: corr_sent = re.sub('"',"",corr_sent)
-    if lpar == 1: corr_sent = re.sub(r'\(',"",corr_sent)
-    if rpar == 1: corr_sent = re.sub(r'\)',"",corr_sent)
-    #if single == 1: corr_sent = re.sub('"',"")
-    if corr_sent[-1] not in [".",",","?","!"] :
-        corr_sent += "."
+    corr_sent = fix_tweet(sent)
 
     #print the result
-    print(is_copy(sent,tweets),len(sent))
-    print(sent)
-    print(corr_sent)
+    return (is_copy(sent,tweets),len(sent),corr_sent)
  #   for word in cfd.conditions():
  #       print(word,cfd[word])
     #  print(generate_model(cfd, " ".split(random.choice(tweets))[0]))
 
+def fix_tweet(tweet):
+    double = tweet.count('"')
+    lpar = tweet.count('(')
+    rpar = tweet.count(')')
+    if double == 1: tweet = re.sub('"',"",tweet)
+    if lpar == 1: tweet = re.sub(r'\(',"",tweet)
+    if rpar == 1: tweet = re.sub(r'\)',"",tweet)
+    #if single == 1: corr_sent = re.sub('"',"")
+    if tweet[-1] not in [".",",","?","!"] :
+        tweet += "."
+    if tweet[0].isalpha() and tweet[0].lower() == tweet[0]:
+        tweet = tweet[0].upper()+tweet[1:] 
+    return tweet
 
 def read_file(hashtag):
     '''Reads all tweets from a file given the naming convention'''
@@ -146,6 +148,11 @@ def read_file(hashtag):
         lines = f.read().splitlines()
     return lines
 
-for i in range(10):
-    generate_tweet("happy")
-    print()
+tweets = []
+while len(tweets) < 10:
+    cpy,chars,tweet = generate_tweet("happy")
+    if not cpy and chars > 30 and chars < 141:
+        tweets.append(tweet)
+for t in tweets:
+    print(t)
+    
