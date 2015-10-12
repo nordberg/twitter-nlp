@@ -46,6 +46,7 @@ def get_tweets(hashtag, tweetCount):
 			tweet = re.sub('&amp;', ' ', tweet)
 			tweet = re.sub('\\n', ' ', tweet)
 			tweet = re.sub('\n', ' ', tweet)
+			tweet = tweet.replace("\n", ' ') #Does the work for some reason
 			#tweet = re.sub(':', ' ', tweet)
 			tweet = re.sub('\\*\\n/g', ' ', tweet)
 			#tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
