@@ -1,9 +1,10 @@
 import tweeter
 import os.path
 
+
 if __name__ == '__main__':
 	hashtag = "test"
-	numberOfTweets = 2000
+	numberOfTweets = 1500
 	
 	
 	
@@ -14,5 +15,6 @@ if __name__ == '__main__':
 	
 
 	for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
-		f.write(tweet + '\n')
+		if tweet + '\n' not in open('tweet_' + hashtag).read() :
+			f.write(tweet + '\n')
 	f.close()
