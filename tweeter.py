@@ -28,33 +28,58 @@ def get_tweets(hashtag, tweetCount):
 	wordCnt = Counter()
 	# Max amount of queries is 15
 	MAX_ATTEMPTS = 15
+	counter =0
 	for i in range(0, MAX_ATTEMPTS):
 		if tweetCount <= len(tweets):
 			break # found all tweets
 
-		if (i == 0):
-			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en')
-		else:
-			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en', include_entities='true', max_id=next_max_id)
-
+		try:
+			if (i == 0):
+				results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en')
+			else:
+				results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en', include_entities='true', max_id=next_max_id)
+		except twython.exceptions.TwythonRateLimitError:
+			print ("Rate limit error")
+			print( twitter.get_lastfunction_header('x-rate-limit-limit'))
+			print( twitter.get_lastfunction_header('x-rate-limit-remaining'))
+			print( twitter.get_lastfunction_header('x-rate-limit-class'))
+			print( twitter.get_lastfunction_header('x-rate-limit-reset'))
+			return
 		for result in results['statuses']:
-			tweet = result['text']
-			tweet = re.sub('@[A-Za-z]+', ' ', str(result['text'].encode(sys.stdout.encoding, errors='ignore')))
-			tweet = re.sub('(RT|RT:|RT :|RT  :)', ' ', tweet)
-			tweet = re.sub('b\'', ' ', tweet)
+		
+			
+		
+			
+			tweet = str(result['text'].encode(sys.stdout.encoding, errors='ignore'))
+			
+			#counter+=1
+			#if counter < 10 :
+			#	print("original tweet:")
+			#	print ("*", tweet)
+			
+			#Remove poster's address
+			tweet = re.sub('@[A-Za-z_0-9:]+ ', ' ', str(result['text'].encode(sys.stdout.encoding, errors='ignore')))
+			
+			
+			
+		
+			#Removal of special Twitter symbols
+			tweet = re.sub('(RT|RT |RT:|RT :|RT  :)', '', tweet)
+			tweet = re.sub('b\'', '', tweet)
+			tweet = re.sub('b"', '', tweet)
+			
+			
 			tweet = re.sub('\w\\?\\[A-Za-z0-9]* ', ' ', tweet)
 			tweet = re.sub('&amp;', ' ', tweet)
+			tweet = re.sub('&gt', '>', tweet)
 			tweet = re.sub('\\n', ' ', tweet)
 			tweet = re.sub('\n', ' ', tweet)
 			tweet = tweet.replace("\n", ' ') #Does the work for some reason
 			tweet = tweet.replace("\\n", ' ') #Does the work for some reason
-			#tweet = re.sub(':', ' ', tweet)
 			tweet = re.sub('\\*\\n/g', ' ', tweet)
-			#tweet = re.sub('https?://\w*\.co/\w*', '', tweet)
 			tweet = re.sub('http[^\s]*', '', tweet) #matches all words that starts with http
-			tweet = re.sub('b"', ' ', tweet)
 			tweet = re.sub('\s\s+', ' ', tweet)
-			
+			tweet = tweet.strip() #Removes all leading and ending spaces
 			
 			if(tweet[-1]=='\'' or tweet[-1]=='"'):
 				tweet = tweet[:len(tweet)-1]
@@ -63,8 +88,12 @@ def get_tweets(hashtag, tweetCount):
 			
 			tweets.append(tweet.strip())
 			corpora += tweet
-			for word in tweet.split():
-				wordCnt[word] += 1
+
+			
+			#if counter < 10 :
+			#	print ("*",tweet)
+			#for word in tweet.split():
+			#	wordCnt[word] += 1
 
 		try:
 			next_results_url_params = results['search_metadata']['next_results']
