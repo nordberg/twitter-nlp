@@ -27,7 +27,7 @@ def main():
 			print(computer_tweets[i])
 		print('C/c (Computer) or H/h (Human)?')
 
-		choice = raw_input('Answer: ')
+		choice = input('Answer: ')
 		if r == 0:
 			if choice.lower() == 'h':
 				right += 1
@@ -56,7 +56,7 @@ def fill_computer_tweets(hashtag):
 	tweets = []
 
 	for i in range(nr_of_tweets):
-		tweets.append(nltk_ver.get_tweet(hashtag))
+		tweets.append(nltk_ver.generate_tweet(hashtag)[2])
 
 	return tweets
 
