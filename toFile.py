@@ -1,7 +1,7 @@
 import tweeter
 import os.path
 import sys
-
+from twython import TwythonRateLimitError
 
 # This is the main method for extracting tweets from twitter 
 # and putting them in a file with name: tweet_[hashtag]
@@ -32,8 +32,16 @@ if __name__ == '__main__':
 
 	#while True: Twython only gets the lastest tweets, so calling the function 
 	#multiple times does nothing. You have to wait
-	for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
-		if tweet + '\n' not in open(filename).read() :
-			f.write(tweet + '\n')
-		f = open(filename,'a')
+	try :
+		for tweet in tweeter.get_tweets(hashtag, numberOfTweets)[0]:
+			if tweet + '\n' not in open(filename).read() :
+				f.write(tweet + '\n')
+			f = open(filename,'a')
+	except TwythonRateLimitError:
+		print ("Rate limit error")
+		print( twitter.get_lastfunction_header('x-rate-limit-limit'))
+		print( twitter.get_lastfunction_header('x-rate-limit-remaining'))
+		print( twitter.get_lastfunction_header('x-rate-limit-class'))
+		print( twitter.get_lastfunction_header('x-rate-limit-reset'))
+		sys.exit()
 	#f.close()
