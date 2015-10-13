@@ -39,7 +39,7 @@ def main():
 			else:
 				print('Wrong!')
 
-	print('You got ' + str(right) + ' out of ' + nr_of_tweets + ' correct!')
+	print('You got ' + str(right) + ' out of ' + str(nr_of_tweets) + ' correct!')
 
 def fill_human_tweets(hashtag):
 	with open(os.getcwd()+os.path.sep+'tweet_'+hashtag) as f:
