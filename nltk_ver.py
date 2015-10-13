@@ -5,7 +5,7 @@ import sys
 import re
 from nltk.tag import StanfordPOSTagger
 
-LOWER_CASE = True
+LOWER_CASE = False
 
 #STANFORD AND JAVA SETUP
 nltk.internals.config_java("C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin")
@@ -61,7 +61,12 @@ def get_grammar_ngrams(tweets,n):
         merged += t + [""]*n
 
     # Run the Grammar tagging
-    g_grams = stanford.tag(merged)
+    g_grams = []
+    max_gram = 75000 # all tweets can cause java memory problem
+    total = 1+int(len(merged)/max_gram)
+    for i in range(total):
+        print(i+1,total)
+        g_grams += stanford.tag(merged[i*max_gram:(i+1)*max_gram])
     g_grams = [g[1] for g in g_grams]
 
     # Create a map for word to grammar type (major speed increase)
@@ -89,8 +94,8 @@ def is_copy(tweet, database):
 
 def extra_trim(tweet):
     '''Makes small hacks on the tweets'''
-    if(tweet[-1] == '\''):
-        tweet = tweet[:-1]
+  #  if(tweet[-1] == '\''):
+  #      tweet = tweet[:-1]
     tweet = re.sub('\\n',' ',tweet)
     return tweet
 
@@ -288,7 +293,7 @@ def read_file(hashtag):
 if __name__ == '__main__':
     tweets = []
     while len(tweets) < 20:
-        cpy,chars,tweet = generate_tweet("apple")
+        cpy,chars,tweet = generate_tweet("obama")
         if not cpy and chars > 30 and chars < 141 and tweet not in tweets:
             tweets.append(tweet)
             print(tweet)
