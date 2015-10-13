@@ -42,7 +42,7 @@ def find_ngrams(input_list,n,none_fill = True):
 
 def create_model(tweets,n):
     ''' Merges all n-grams of all tweets'''
-    split_t = [t.split() for t in tweets if "\\" not in t and "http" not in t]
+    split_t = [t.split() for t in tweets if '\\' not in t and 'http' not in t]
 
     model = []
     for tweet in split_t:
@@ -89,14 +89,14 @@ def is_copy(tweet, database):
 
 def extra_trim(tweet):
     '''Makes small hacks on the tweets'''
-    if(tweet[-1] == "'"):
+    if(tweet[-1] == '\''):
         tweet = tweet[:-1]
-    tweet = re.sub("\\n"," ",tweet)
+    tweet = re.sub('\\n',' ',tweet)
     return tweet
 
 def to_grammar(word):
-    if word == "":
-        return ""
+    if word == '':
+        return ''
     if single_grammar_cache.get(word):
         word_g = single_grammar_cache[word]
     else:
@@ -104,7 +104,7 @@ def to_grammar(word):
             word_g = stanford.tag(word)[1]
         except IndexError as e:
             print(e)
-            return ""
+            return ''
         single_grammar_cache[word] = word_g
     return word_g
 
@@ -116,7 +116,7 @@ def white_space_puncation(tweet):
 def fix_punctation(tweet):
     t1 = tweet
     for i in range(50):
-        tweet = re.sub(r"([\S].)\s+([\\,\\.\\?\\!])",r'\1\2',tweet)
+        tweet = re.sub(r'([\S].)\s+([\\,\\.\\?\\!])',r'\1\2',tweet)
         if tweet == t1:
             break
     
@@ -148,19 +148,19 @@ def generate_tweet(hashtag):
     if grammar_cache.get(hashtag):
         g_grams = grammar_cache[hashtag]
     else:
-        print("Creating grammar")
+        print('Creating grammar')
         g_grams = get_grammar_ngrams(tweets,g_n)
         grammar_cache[hashtag] = g_grams
-        print("Grammar done")
+        print('Grammar done')
 
     #Create n-gram model
     if model_cache.get(hashtag):
         grams = model_cache[hashtag]
     else:
-        print("Creating model")
+        print('Creating model')
         grams = create_model(tweets,n)
         model_cache[hashtag] = grams
-        print("model done")
+        print('model done')
 
     
     # Create probability model
@@ -173,14 +173,14 @@ def generate_tweet(hashtag):
     knd = nltk.probability.KneserNeyProbDist(fqd)
 
     # Init loop values
-    last = [""]*n
-    new_word = ""
+    last = ['']*n
+    new_word = ''
     sentence = []
 
     #Each iteration produces 1 word
     for i in range(50):
         new_word = next_word(tweets,cfd,knd,grammar,last,sentence,g_n)
-        if new_word == "":
+        if new_word == '':
             #End of tweet was selected, abort appending
             break
 
@@ -189,7 +189,7 @@ def generate_tweet(hashtag):
         last = last[1:]
         last.append(new_word)
 
-    sent = " ".join(sentence)
+    sent = ' '.join(sentence)
 
     # Make some symbol correction
     corr_sent = fix_tweet(sent)
@@ -270,13 +270,13 @@ def fix_tweet(tweet):
     #if single == 1: corr_sent = re.sub('"',"")
 
     # Add punctation at the end
-    if tweet[-1] not in [".",",","?","!"] :
+    if tweet[-1] not in ['.',',','?','!'] :
         pass#tweet += "."
 
 
     if tweet[0].isalpha() and tweet[0].lower() == tweet[0]:
         tweet = tweet[0].upper()+tweet[1:]
-    tweet = re.sub(r" i "," I ",tweet)
+    tweet = re.sub(r' i ',' I ',tweet)
     tweet = fix_punctation(tweet)
     return tweet
 
@@ -289,7 +289,7 @@ def read_file(hashtag):
 if __name__ == '__main__':
     tweets = []
     while len(tweets) < 20:
-        cpy,chars,tweet = generate_tweet("dude")
+        cpy,chars,tweet = generate_tweet('dude')
         if not cpy and chars > 30 and chars < 141 and tweet not in tweets:
             tweets.append(tweet)
             print(tweet)
