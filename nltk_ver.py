@@ -57,8 +57,8 @@ def generate_tweet(hashtag):
 
     # Settings
     avoid_copy = True
-    check_length = 4
-    n = 2
+    check_length = 5
+    n = 3
 
     # Gather the tweets
     tweets = [extra_trim(t) for t in read_file(hashtag)]
@@ -67,6 +67,11 @@ def generate_tweet(hashtag):
     # Create probability model
     grams = create_model(tweets,n)
     cfd = nltk.ConditionalFreqDist(grams)
+    fqd = nltk.FreqDist()
+    for g in grams:
+        fqd[g[0]] += 1
+
+    knd = nltk.probability.KneserNeyProbDist(fqd)
 
     # Init loop values
     last = [None]*n
@@ -85,8 +90,17 @@ def generate_tweet(hashtag):
             break
 
         # Tries to find a plagiary substring choice 20 times 
-        for j in range(20):
+        #for j in range(20):
+        if i < 3:
             new_word = random.choice(choices)[0] #Get a random successor
+        else:
+            bestProb =  0;
+            for c in choices:
+                trigram = (last[len(last) - 2], last[len(last) - 1], c[0])
+                trigramProb = knd.prob(trigram)
+                if trigramProb > bestProb:
+                    bestProb = trigramProb
+                    new_word = c[0]
 
             # Special case - only allow sentences to beging with
             # alphabetical characters or hashtags
@@ -150,7 +164,7 @@ def read_file(hashtag):
 
 tweets = []
 while len(tweets) < 10:
-    cpy,chars,tweet = generate_tweet("happy")
+    cpy,chars,tweet = generate_tweet("obama")
     if not cpy and chars > 30 and chars < 141:
         tweets.append(tweet)
 for t in tweets:
