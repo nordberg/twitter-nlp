@@ -83,8 +83,6 @@ def get_tweets(hashtag, tweetCount):
 			
 			if(tweet[-1]=='\'' or tweet[-1]=='"'):
 				tweet = tweet[:len(tweet)-1]
-			if(tweet[1] == ':') :
-				tweet = tweet[2:]
 			
 			tweets.append(tweet.strip())
 			corpora += tweet
