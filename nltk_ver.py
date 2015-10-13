@@ -144,7 +144,7 @@ def fix_tweet(tweet):
 
 def read_file(hashtag):
     '''Reads all tweets from a file given the naming convention'''
-    with open(os.getcwd()+'\\tweet_'+hashtag) as f:
+    with open(os.getcwd()+os.path.sep+'tweet_'+hashtag) as f:
         lines = f.read().splitlines()
     return lines
 
