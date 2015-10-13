@@ -196,10 +196,9 @@ def generate_tweet(hashtag):
 
     #print the result
     return (is_copy(sent,tweets),len(sent),corr_sent)
- #   for word in cfd.conditions():
- #       print(word,cfd[word])
-    #  print(generate_model(cfd, " ".split(random.choice(tweets))[0]))
-def next_word(tweets,cfd,knd,grammar,last,sentence,g_n,top_choices = 10):
+
+
+def next_word(tweets,cfd,knd,grammar,last,sentence,g_n,top_choices = 5):
     #SETTING
     avoid_copy = True
     check_length = 5
@@ -289,7 +288,7 @@ def read_file(hashtag):
 if __name__ == '__main__':
     tweets = []
     while len(tweets) < 20:
-        cpy,chars,tweet = generate_tweet("dude")
+        cpy,chars,tweet = generate_tweet("apple")
         if not cpy and chars > 30 and chars < 141 and tweet not in tweets:
             tweets.append(tweet)
             print(tweet)
