@@ -27,7 +27,7 @@ def main():
 			print(computer_tweets[i])
 		print('C/c (Computer) or H/h (Human)?')
 
-		choice = sys.stdin.read(1)
+		choice = raw_input('Answer: ')
 		if r == 0:
 			if choice.lower() == 'h':
 				right += 1
