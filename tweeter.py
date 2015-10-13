@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from twython import Twython
+from twython import Twython, TwythonRateLimitError
 from collections import Counter
 import sys
 import re
@@ -33,18 +33,13 @@ def get_tweets(hashtag, tweetCount):
 		if tweetCount <= len(tweets):
 			break # found all tweets
 
-		try:
-			if (i == 0):
-				results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en')
-			else:
-				results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en', include_entities='true', max_id=next_max_id)
-		except twython.exceptions.TwythonRateLimitError:
-			print ("Rate limit error")
-			print( twitter.get_lastfunction_header('x-rate-limit-limit'))
-			print( twitter.get_lastfunction_header('x-rate-limit-remaining'))
-			print( twitter.get_lastfunction_header('x-rate-limit-class'))
-			print( twitter.get_lastfunction_header('x-rate-limit-reset'))
-			return
+		
+		if (i == 0):
+			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en')
+		else:
+			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en', include_entities='true', max_id=next_max_id)
+		
+			
 		for result in results['statuses']:
 		
 			
