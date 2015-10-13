@@ -16,6 +16,7 @@ stanford = StanfordPOSTagger(path_to_model,path_to_jar)
 
 grammar_cache = {}
 single_grammar_cache = {}
+model_cache = {}
 
 def find_ngrams(input_list,n,none_fill = True):
   '''
@@ -54,16 +55,26 @@ def get_grammar_ngrams(tweets,n):
     grammar = []
     tweets  = [t.split() for t in tweets]
     merged = []
+
+    #Make all tweets into a single list, add n None between each tweet
     for t in tweets:
         merged += t + [""]*n
+
+    # Run the Grammar tagging
     g_grams = stanford.tag(merged)
     g_grams = [g[1] for g in g_grams]
+
+    # Create a map for word to grammar type (major speed increase)
     for w,g in zip(merged,g_grams):
         single_grammar_cache[w] = g
+
+    # Create g-grams
     grammar = find_ngrams(g_grams,n)
-    for g in grammar[::-1]:
-        if g[1] in [",",".","!","?"]:
-            grammar.append(g)
+
+    #Double chance for punctation
+    #for g in grammar[::-1]:
+    #    if g[1] in [",",".","!","?"]:
+    #        grammar.append(g)
     return grammar
 
 
@@ -115,18 +126,25 @@ def fix_punctation(tweet):
     tweet = re.sub('^([a-z])|[\.|\?|\!]\s*([a-z])|\s+([a-z])(?=\.)', uppercase, tweet)
     return tweet
 
+def is_probable_grammar(new_word, best_grammar):
+    new_word_g = to_grammar(new_word)
+    if len(best_grammar) == 0:
+        return True
+    if all(new_word_g != best_g[0] for best_g in best_grammar):
+        return False
+    return True
+
 def generate_tweet(hashtag):
 
     # Settings
-    avoid_copy = True
-    check_length = 4
-    n = 2
-    g_n = 2
+    n = 3
+    g_n = 3
 
     # Gather the tweets
     tweets = [extra_trim(white_space_puncation(t)) for t in read_file(hashtag)]
     if LOWER_CASE: tweets = [t.lower() for t in tweets]
 
+    # Create Grammar
     if grammar_cache.get(hashtag):
         g_grams = grammar_cache[hashtag]
     else:
@@ -135,11 +153,24 @@ def generate_tweet(hashtag):
         grammar_cache[hashtag] = g_grams
         print("Grammar done")
 
+    #Create n-gram model
+    if model_cache.get(hashtag):
+        grams = model_cache[hashtag]
+    else:
+        print("Creating model")
+        grams = create_model(tweets,n)
+        model_cache[hashtag] = grams
+        print("model done")
+
     
     # Create probability model
-    grams = create_model(tweets,n)
     cfd = nltk.ConditionalFreqDist(grams)
     grammar = nltk.ConditionalFreqDist(g_grams)
+    fqd = nltk.FreqDist()
+    for g in grams:
+        fqd[g[0]] += 1
+
+    knd = nltk.probability.KneserNeyProbDist(fqd)
 
     # Init loop values
     last = [""]*n
@@ -148,48 +179,7 @@ def generate_tweet(hashtag):
 
     #Each iteration produces 1 word
     for i in range(50):
-        as_tuple = tuple(last)
-        as_grammar = [""]*max(0,len(sentence)-g_n) + sentence[-g_n:]
-        as_grammar = tuple(as_grammar)
-
-        # Get the 10 most common successors for the current n last words
-        choices = cfd[as_tuple].most_common(15)
-        best_grammar = grammar[as_grammar].most_common(3)
-       # print("best",best_grammar)
-        if len(choices) == 0:
-            # Stop if no choices are available
-            # We want smoothing here!
-            break
-
-        # Tries to find a plagiary substring choice 20 times 
-        for j in range(20):
-            new_word = random.choice(choices)[0] #Get a random successor
-
-            if len(sentence) > 0:
-                new_word_g = to_grammar(new_word)
-                if len(best_grammar) > 0:
-                    if all(new_word_g != best_g[0] for best_g in best_grammar):
-                        continue
-            # Special case - only allow sentences to beging with
-            # alphabetical characters or hashtags
-            if len(sentence) == 0 and re.sub("#","",new_word).isalpha():
-                break
-
-            # When the substring length for plagiary check is reached
-            # start check the sentence.
-            if len(sentence) >= check_length:
-                if new_word == "":
-                    if choices[0][0] == "":
-                        # Only end tweet if it is the most popular alternative
-                        continue
-                    if not is_copy(" ".join(sentence),tweets):
-                        # If the entire sentence is unique, allow it.
-                        break
-                elif not is_copy(" ".join((sentence+[new_word])[-check_length:]),tweets):
-                    # If the number of words given by check_length is not a substring of
-                    # any tweet, allow the choice.
-                    break
-
+        new_word = next_word(tweets,cfd,knd,grammar,last,sentence,g_n)
         if new_word == "":
             #End of tweet was selected, abort appending
             break
@@ -209,8 +199,68 @@ def generate_tweet(hashtag):
  #   for word in cfd.conditions():
  #       print(word,cfd[word])
     #  print(generate_model(cfd, " ".split(random.choice(tweets))[0]))
+def next_word(tweets,cfd,knd,grammar,last,sentence,g_n,top_choices = 10):
+    #SETTING
+    avoid_copy = True
+    check_length = 5
+
+    as_tuple = tuple(last)
+    as_grammar = [""]*max(0,len(sentence)-g_n) + sentence[-g_n:]
+    as_grammar = tuple(as_grammar)
+    new_word = None
+
+    # Get the N most common successors for the current n last words
+    best_grammar = grammar[as_grammar].most_common(2)
+    choices = cfd[as_tuple].most_common(top_choices)
+
+    if len(choices) == 0:
+        # Stop if no choices are available
+        # We want smoothing here!
+        return ""
+
+    if len(sentence) < 3:
+        for rand in range(20):
+            new_word = random.choice(choices)[0] #Get a random successor
+            # Special case - only allow sentences to beging with
+            # alphabetical characters or hashtags
+            if len(sentence) == 0 and re.sub("#","",new_word).isalpha():
+                break
+    else:
+        bestProb =  0;
+        for c in choices:
+            trigram = (last[len(last) - 2], last[len(last) - 1], c[0])
+            trigramProb = knd.prob(trigram)
+
+            # When the substring length for plagiary check is reached
+            # start check the sentence.
+            if len(sentence) >= check_length:
+                if c[0] == "":
+                    if choices[0][0] != "":
+                        # Only end tweet if it is the most popular alternative
+                        continue
+                    if is_copy(" ".join(sentence),tweets):
+                        # If the entire sentence isn't unique, don't allow to end
+                        continue
+                elif is_copy(" ".join((sentence+[c[0]])[-check_length:]),tweets):
+                    # If the number of words given by check_length is not a substring of
+                    # any tweet, allow the choice.
+                    continue
+
+            if trigramProb > bestProb and is_probable_grammar(c[0],best_grammar):
+                bestProb = trigramProb
+                new_word = c[0]
+  
+    if new_word == None:
+        if top_choices < 100:
+            return next_word(tweets,cfd,knd,grammar,last,sentence,g_n,top_choices*2)
+        else:
+            return random.choice(choices)[0]
+
+    return new_word
 
 def fix_tweet(tweet):
+
+    #Remove single quotaion/paranthesis
     double = tweet.count('"')
     lpar = tweet.count('(')
     rpar = tweet.count(')')
@@ -218,8 +268,12 @@ def fix_tweet(tweet):
     if lpar == 1: tweet = re.sub(r'\(',"",tweet)
     if rpar == 1: tweet = re.sub(r'\)',"",tweet)
     #if single == 1: corr_sent = re.sub('"',"")
+
+    # Add punctation at the end
     if tweet[-1] not in [".",",","?","!"] :
         pass#tweet += "."
+
+
     if tweet[0].isalpha() and tweet[0].lower() == tweet[0]:
         tweet = tweet[0].upper()+tweet[1:]
     tweet = re.sub(r" i "," I ",tweet)
@@ -228,13 +282,14 @@ def fix_tweet(tweet):
 
 def read_file(hashtag):
     '''Reads all tweets from a file given the naming convention'''
-    with open(os.getcwd()+'\\tweet_'+hashtag) as f:
+    with open(os.getcwd()+os.path.sep+'tweet_'+hashtag) as f:
         lines = f.read().splitlines()
     return lines
 
-tweets = []
-while len(tweets) < 10:
-    cpy,chars,tweet = generate_tweet("weird")
-    if not cpy and chars < 141:
-        tweets.append(tweet)
-        print(tweet)
+if __name__ == '__main__':
+    tweets = []
+    while len(tweets) < 20:
+        cpy,chars,tweet = generate_tweet("dude")
+        if not cpy and chars > 30 and chars < 141 and tweet not in tweets:
+            tweets.append(tweet)
+            print(tweet)
