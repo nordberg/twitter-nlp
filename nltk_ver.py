@@ -7,6 +7,9 @@ import platform
 from nltk.tag import StanfordPOSTagger
 
 LOWER_CASE = False
+HYBRID = True
+if HYBRID:
+    LOWER_CASE = False
 
 #STANFORD AND JAVA SETUP
 #nltk.internals.config_java('C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin')
@@ -15,11 +18,14 @@ LOWER_CASE = False
 os.environ['JAVAHOME'] = '/home/marcus/Downloads/jdk1.8.0_60/jre/bin'
 path_to_model = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'models'+os.path.sep+'english-left3words-distsim.tagger'
 path_to_jar = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'stanford-postagger.jar'
+
+
 stanford = StanfordPOSTagger(path_to_model,path_to_jar)
 
 grammar_cache = {}
 single_grammar_cache = {}
 model_cache = {}
+dist_cache = {}
 
 def find_ngrams(input_list,n,none_fill = True):
   '''
@@ -89,7 +95,7 @@ def get_grammar_ngrams(tweets,n):
 
 def is_copy(tweet, database):
     '''check if the tweet is a substring of any string in the database list'''
-    if LOWER_CASE:
+    if LOWER_CASE or HYBRID:
         return any(tweet.lower() in t.lower() for t in database)
     else:
         return any(tweet in t for t in database)
@@ -142,11 +148,19 @@ def is_probable_grammar(new_word, best_grammar):
         return False
     return True
 
+def get_n_gram(tweets,hashtag,n):
+    if model_cache.get((hashtag,n)):
+        return model_cache[(hashtag,n)]
+    else:
+        grams = create_model(tweets,n)
+        model_cache[(hashtag,n)] = grams
+        return grams
+
 def generate_tweet(hashtag):
 
     # Settings
-    n = 3
-    g_n = 3
+    n = 2
+    g_n = 5
 
     # Gather the tweets
     tweets = [extra_trim(white_space_puncation(t)) for t in read_file(hashtag)]
@@ -162,20 +176,22 @@ def generate_tweet(hashtag):
         print('Grammar done')
 
     #Create n-gram model
-    if model_cache.get(hashtag):
-        grams = model_cache[hashtag]
-    else:
-        print('Creating model')
-        grams = create_model(tweets,n)
-        model_cache[hashtag] = grams
-        print('model done')
+    grams = get_n_gram(tweets,hashtag,n)
+    gram1 = get_n_gram(tweets,hashtag,1)
+    freq1 = nltk.ConditionalFreqDist(gram1)
 
+    #3gram for smoothing
+    if n != 3:
+        grams3 = get_n_gram(tweets,hashtag,3)
+    else:
+        grams3 = grams
     
     # Create probability model
     cfd = nltk.ConditionalFreqDist(grams)
     grammar = nltk.ConditionalFreqDist(g_grams)
     fqd = nltk.FreqDist()
-    for g in grams:
+ 
+    for g in grams3:
         fqd[g[0]] += 1
 
     knd = nltk.probability.KneserNeyProbDist(fqd)
@@ -188,7 +204,7 @@ def generate_tweet(hashtag):
 
     #Each iteration produces 1 word
     for i in range(50):
-        new_word = next_word(tweets,cfd,knd,sgt,grammar,last,sentence,g_n)
+        new_word = next_word(tweets,cfd,knd,sgt,grammar,freq1,last,sentence,n,g_n,hashtag)
         if new_word == '':
             #End of tweet was selected, abort appending
             break
@@ -206,26 +222,41 @@ def generate_tweet(hashtag):
     #print the result
     return (is_copy(sent,tweets),len(sent),corr_sent)
 
-
-def next_word(tweets,cfd,knd,sgt,grammar,last,sentence,g_n,top_choices = 5):
-    #SETTING
-    avoid_copy = True
-    check_length = 5
-    using_smoothing = 'sgt' # 'sgt' = SimpleGoodTuring, 'knd' = Kneser-Ney
-
-    as_tuple = tuple(last)
-    as_grammar = ['']*max(0,len(sentence)-g_n) + sentence[-g_n:]
+def most_common(cfd, grammar, n_gram, sentence, top_choices, g_n):
+    if HYBRID:
+        as_tuple = tuple([l.lower() for l in n_gram])
+    else:
+        as_tuple = tuple(n_gram)
+    as_grammar = [""]*max(0,len(sentence)-g_n) + sentence[-g_n:]
     as_grammar = tuple(as_grammar)
-    new_word = None
-
+    
     # Get the N most common successors for the current n last words
     best_grammar = grammar[as_grammar].most_common(2)
     choices = cfd[as_tuple].most_common(top_choices)
 
+    return choices,best_grammar
+
+def next_word(tweets,cfd,knd,sgt, grammar,freq1,last,sentence,n,g_n,hashtag,top_choices = 5):
+    #SETTING
+    avoid_copy = True
+    check_length = 4
+    new_word = None
+    using_smoothing = 'sgt' # 'sgt' = SimpleGoodTuring, 'knd' = Kneser-Ney
+    wordProb = 0
+
+    choices,best_grammar = most_common(cfd,grammar,last,sentence,top_choices,g_n)
+
     if len(choices) == 0:
-        # Stop if no choices are available
-        # We want smoothing here!
-        return ''
+        if len(sentence) > 2:
+            if sentence[-2] in ['.',',','?','!']:
+                new_gram = [""]*(n-1)+[sentence[-1]]
+                choices,best_grammar = most_common(cfd,grammar,new_gram,sentence,top_choices,g_n)
+            if len(choices) == 0:
+                choices,best_grammar = most_common(freq1,grammar,[sentence[-1]],sentence,top_choices,g_n)
+        if len(choices) == 0:
+            # Stop if no choices are available
+            # We want smoothing here!
+            return ""
 
     if len(sentence) < 3:
         for rand in range(20):
@@ -237,11 +268,17 @@ def next_word(tweets,cfd,knd,sgt,grammar,last,sentence,g_n,top_choices = 5):
     else:
         bestProb =  0;
         for c in choices:
-            trigram = (last[len(last) - 2], last[len(last) - 1], c[0])
-            trigramProb = knd.prob(trigram)
-
-            bigram = (last[len(last) -1], c[0])
-            sgtProb = sgt.prob(bigram)
+            wordProb = 0
+            if using_smoothing == 'knd':
+                trigram = (last[len(last) - 2], last[len(last) - 1], c[0])
+                trigramProb = knd.prob(trigram)
+                if trigramProb == 0:
+                    trigramProb = c[1]/len(tweets)
+                wordProb = trigramProb
+            if using_smoothing == 'sgt':
+                bigram = (last[len(last) -1], c[0])
+                sgtProb = sgt.prob(bigram)
+                wordProb = sgtProb
 
             # When the substring length for plagiary check is reached
             # start check the sentence.
@@ -253,24 +290,24 @@ def next_word(tweets,cfd,knd,sgt,grammar,last,sentence,g_n,top_choices = 5):
                     if is_copy(' '.join(sentence),tweets):
                         # If the entire sentence isn't unique, don't allow to end
                         continue
-                elif is_copy(' '.join((sentence+[c[0]])[-check_length:]),tweets):
+                elif is_copy(fix_punctation(" ".join((sentence+[c[0]])[-check_length:])),tweets):
                     # If the number of words given by check_length is not a substring of
                     # any tweet, allow the choice.
                     continue
+            if not is_probable_grammar(c[0],best_grammar):
+                continue
 
-            if using_smoothing == 'sgt':
-                if sgtProb > bestProb and is_probable_grammar(c[0],best_grammar):
-                    bestProb = sgtProb
-                    new_word = c[0]
+            if wordProb > bestProb and random.randint(0,10) < 9:
+                bestProb = wordProb
+                new_word = c[0]
+            elif wordProb == bestProb and random.randint(0,1) == 1:
+                bestProb = wordProb
+                new_word = c[0]
 
-            elif using_smoothing == 'knd':
-                if kndProb > bestProb and is_probable_grammar(c[0],best_grammar):
-                    bestProb = kndProb
-                    new_word = c[0]
   
     if new_word == None:
-        if top_choices < 100:
-            return next_word(tweets,cfd,knd,sgt,grammar,last,sentence,g_n,top_choices*2)
+        if top_choices < 100 and len(choices) == top_choices:
+            return next_word(tweets,cfd,knd,sgt,grammar,freq1,last,sentence,n,g_n,hashtag,top_choices*2)
         else:
             return random.choice(choices)[0]
 

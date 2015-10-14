@@ -17,29 +17,36 @@ def main():
 	computer_tweets = fill_computer_tweets(hashtag)
 
 	right = 0
+	right_computer = 0
+	right_human = 0
+	cTweetCount = 0
+	hTweetCount = 0
 
 	for i in range(nr_of_tweets):
 		print('Tweet Nr. ' + str(i + 1))
 		r = random.randint(0, 1)
 		if r == 0:
+			hTweetCount += 1
 			print(human_tweets[i])
 		else:
+			cTweetCount += 1
 			print(computer_tweets[i])
 		print('C/c (Computer) or H/h (Human)?')
 
-		choice = input('Answer: ')
+		choice = raw_input('Answer: ')
 		if r == 0:
 			if choice.lower() == 'h':
 				right += 1
-			else:
-				print('Wrong!')
+				right_human += 1
+
 		if r == 1:
 			if choice.lower() == 'c':
 				right += 1
-			else:
-				print('Wrong!')
+				right_computer += 1
 
 	print('You got ' + str(right) + ' out of ' + str(nr_of_tweets) + ' correct!')
+	print('Computer tweets ' + str(right_computer) + ' out of ' + str(cTweetCount) + ' correct!')
+	print('Human tweets ' + str(right_human) + ' out of ' + str(hTweetCount) + ' correct!')
 
 def fill_human_tweets(hashtag):
 	with open(os.getcwd()+os.path.sep+'tweet_'+hashtag) as f:
