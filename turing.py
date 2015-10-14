@@ -3,7 +3,7 @@ import sys
 import random
 import nltk_ver
 
-nr_of_tweets = 20
+nr_of_tweets = 3
 
 def main():
 	print('Hello and welcome to this test! You will be presented ' + str(nr_of_tweets) + ' tweets. ' + \
@@ -12,64 +12,48 @@ def main():
 		' is an even distribution of the two.')
 	print('-----------------------------------')
 
-	hashtag = 'news'
-	human_tweets = fill_human_tweets(hashtag)
-	computer_tweets = fill_computer_tweets(hashtag)
+	import test_10x10_1
+	tweets = test_10x10_1.all_tweets
+	h_tweets = [t for t in tweets if t[0]]
+	c_tweets = [t for t in tweets if not t[0]]
 
-	right = 0
-	right_computer = 0
-	right_human = 0
-	cTweetCount = 0
-	hTweetCount = 0
+	c_number = random.randint(0,nr_of_tweets)
+	human_tweets = random.sample(h_tweets,nr_of_tweets-c_number)
+	computer_tweets = random.sample(c_tweets,c_number)
+	test_sample = human_tweets+computer_tweets
+	random.shuffle(test_sample)
+	was_right = []
 
-	for i in range(nr_of_tweets):
-		print('Tweet Nr. ' + str(i + 1))
-		r = random.randint(0, 1)
-		if r == 0:
-			hTweetCount += 1
-			print(human_tweets[i])
-		else:
-			cTweetCount += 1
-			print(computer_tweets[i])
-		print('C/c (Computer) or H/h (Human)?')
+	result_file = "results.py"
+	with open(result_file, "a") as f:
+		for i,tweet in enumerate(test_sample):
+			print('Tweet Nr. ' + str(i + 1) + " #"+tweet[1])
+			print(tweet[2])
+			print('C/c (Computer) or H/h (Human)?')
 
-		choice = raw_input('Answer: ')
-		if r == 0:
-			if choice.lower() == 'h':
-				right += 1
-				right_human += 1
+			choice = None
+			while choice not in ['c','C','h','H']:
+				choice = input('Guess: ')
+			human_guess = choice.lower() == 'h'
+			if human_guess:
+				was_right.append(tweet[0])
+			else:
+				was_right.append(not tweet[0])
+			print("answers.append("+str((human_guess,tweet))+")",file=f)
 
-		if r == 1:
-			if choice.lower() == 'c':
-				right += 1
-				right_computer += 1
+	print("-------------------------------------------------------------")
+	print("-------------------------------------------------------------")
+	print("-------------------------------------------------------------")
+	print()
+	print("You scored " + str(was_right.count(True)) + "/"+str(nr_of_tweets))
+	for score,tweet in zip(was_right,test_sample):
+		print("Origin: " + ("H" if tweet[0] else "C") + ". Score: " + ("CORRECT" if score else "WRONG"))
+		print("#"+ tweet[1] + " " + tweet[2])
 
-	print('You got ' + str(right) + ' out of ' + str(nr_of_tweets) + ' correct!')
-<<<<<<< HEAD
+	print("THANK YOU FOR PARTICIPATING")
 	input()
-=======
-	print('Computer tweets ' + str(right_computer) + ' out of ' + str(cTweetCount) + ' correct!')
-	print('Human tweets ' + str(right_human) + ' out of ' + str(hTweetCount) + ' correct!')
->>>>>>> 72fedeefd9b515b4c673962f15ef52808e91482c
 
-def fill_human_tweets(hashtag):
-	with open(os.getcwd()+os.path.sep+'tweet_'+hashtag) as f:
-		lines = f.read().splitlines()
 
-	tweets = []
 
-	for i in range(nr_of_tweets):
-		tweets.append(lines[random.randint(0, len(lines))])
-
-	return tweets
-
-def fill_computer_tweets(hashtag):
-	tweets = []
-
-	for i in range(nr_of_tweets):
-		print(i)
-		tweets.append(nltk_ver.get_tweet(hashtag))
-
-	return tweets
-
-main()
+if __name__ == '__main__':
+	main()

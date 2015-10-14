@@ -23,8 +23,6 @@ path_to_jar = os.getcwd()+'\\stanford-postagger-2015-04-20\\stanford-postagger.j
 #os.environ['JAVAHOME'] = 'C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin'
 #path_to_model = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'models'+os.path.sep+'english-left3words-distsim.tagger'
 #path_to_jar = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'stanford-postagger.jar'
->>>>>>> b2f074ca20ce607765cf54d4cf16e787b61af7e6
-
 
 stanford = StanfordPOSTagger(path_to_model,path_to_jar)
 
@@ -352,22 +350,27 @@ def get_tweet(hashtag):
         cpy,chars,tweet = generate_tweet(hashtag)
     return tweet
 
-def generate_database(hashtags,filename):
+def generate_database(hashtags,filename,n):
     with open(filename, "a") as f:
         for h in hashtags:
+            for h_t in fill_human_tweets(h,n):
+                print("all_tweets.append("+str((True,h,h_t))+")",file=f)
             grammar_cache.clear()
             model_cache.clear()
             single_grammar_cache.clear()
             print(h)
-            for i in range(10):
+            for i in range(n):
                 print(i)
-                print((False,h,get_tweet(h)),file=f)
+                print("all_tweets.append("+str((False,h,get_tweet(h)))+")",file=f)
 
+def fill_human_tweets(hashtag,n):
+    with open('tweet_'+hashtag) as f:
+        return random.sample(f.read().splitlines(),n)
 
 if __name__ == '__main__':
     #"Apple","coding","dude","halloween","happy",
-    hashtags = ["hockey","news","obama","random","weird"]
-    generate_database(hashtags,"test_10x10_1")
+    hashtags = ["Apple","coding","dude","halloween","happy","hockey","news","obama","random","weird"]
+    generate_database(hashtags,"test_10x10_1.py",10)
     '''tweets = []
     while len(tweets) < 20:
         tweet = get_tweet("dude")
