@@ -47,11 +47,11 @@ def main():
 	print("-------------------------------------------------------------")
 	print("-------------------------------------------------------------")
 	print()
-	print("You scored " + str(was_right.count(True)) + "/"+str(nr_of_tweets))
 	for score,tweet in zip(was_right,test_sample):
 		print("Origin: " + ("H" if tweet[0] else "C") + ". Score: " + ("CORRECT" if score else "WRONG"))
 		print("#"+ tweet[1] + " " + tweet[2])
-
+	print()
+	print("You scored " + str(was_right.count(True)) + "/"+str(nr_of_tweets))
 	print("THANK YOU FOR PARTICIPATING")
 	input()
 
