@@ -28,7 +28,6 @@ stanford = StanfordPOSTagger(path_to_model,path_to_jar)
 grammar_cache = {}
 single_grammar_cache = {}
 model_cache = {}
-dist_cache = {}
 
 def find_ngrams(input_list,n,none_fill = True):
   '''
@@ -241,14 +240,14 @@ def most_common(cfd, grammar, n_gram, sentence, top_choices, g_n):
 def next_word(tweets,cfd,knd,grammar,freq1,last,sentence,n,g_n,hashtag,top_choices = 5):
     #SETTING
     avoid_copy = True
-    check_length = 4
+    check_length = 5
     new_word = None
 
     choices,best_grammar = most_common(cfd,grammar,last,sentence,top_choices,g_n)
 
     if len(choices) == 0:
         if len(sentence) > 2:
-            if sentence[-2] in ['.',',','?','!']:
+            if sentence[-n] in ['.',',','?','!']:
                 new_gram = [""]*(n-1)+[sentence[-1]]
                 choices,best_grammar = most_common(cfd,grammar,new_gram,sentence,top_choices,g_n)
                 if len(choices) == 0:
@@ -322,7 +321,7 @@ def fix_tweet(tweet):
 
 
     if tweet[0].isalpha() and tweet[0].lower() == tweet[0]:
-        tweet = tweet[0].upper()+tweet[1:]
+        pass#tweet = tweet[0].upper()+tweet[1:]
     tweet = re.sub(r' i ',' I ',tweet)
     tweet = fix_punctation(tweet)
     return tweet
@@ -333,10 +332,30 @@ def read_file(hashtag):
         lines = f.read().splitlines()
     return lines
 
+def get_tweet(hashtag):
+    cpy,chars,tweet = generate_tweet(hashtag)
+    while cpy or chars < 30 or chars > 140:
+        cpy,chars,tweet = generate_tweet(hashtag)
+    return tweet
+
+def generate_database(hashtags,filename):
+    with open(filename, "a") as f:
+        for h in hashtags:
+            grammar_cache.clear()
+            model_cache.clear()
+            single_grammar_cache.clear()
+            print(h)
+            for i in range(10):
+                print(i)
+                print((False,h,get_tweet(h)),file=f)
+
+
 if __name__ == '__main__':
-    tweets = []
+    #"Apple","coding","dude","halloween","happy",
+    hashtags = ["hockey","news","obama","random","weird"]
+    generate_database(hashtags,"test_10x10_1")
+    '''tweets = []
     while len(tweets) < 20:
-        cpy,chars,tweet = generate_tweet("apple")
-        if not cpy and chars > 30 and chars < 141 and tweet not in tweets:
-            tweets.append(tweet)
-            print(tweet)
+        tweet = get_tweet("dude")
+        tweets.append(tweet)
+        print(tweet)'''

@@ -12,7 +12,7 @@ def main():
 		' is an even distribution of the two.')
 	print('-----------------------------------')
 
-	hashtag = 'obama'
+	hashtag = 'news'
 	human_tweets = fill_human_tweets(hashtag)
 	computer_tweets = fill_computer_tweets(hashtag)
 
@@ -40,6 +40,7 @@ def main():
 				print('Wrong!')
 
 	print('You got ' + str(right) + ' out of ' + str(nr_of_tweets) + ' correct!')
+	input()
 
 def fill_human_tweets(hashtag):
 	with open(os.getcwd()+os.path.sep+'tweet_'+hashtag) as f:
@@ -56,7 +57,8 @@ def fill_computer_tweets(hashtag):
 	tweets = []
 
 	for i in range(nr_of_tweets):
-		tweets.append(nltk_ver.generate_tweet(hashtag)[2])
+		print(i)
+		tweets.append(nltk_ver.get_tweet(hashtag))
 
 	return tweets
 
