@@ -57,16 +57,22 @@ def generate_tweet(hashtag):
 
     # Settings
     avoid_copy = True
-    check_length = 4
-    n = 2
+    n = 3
+    check_length = 2;
 
     # Gather the tweets
     tweets = [extra_trim(t) for t in read_file(hashtag)]
     if LOWER_CASE: tweets = [t.lower() for t in tweets]
-    
-    # Create probability model
-    grams = create_model(tweets,n)
-    cfd = nltk.ConditionalFreqDist(grams)
+
+    cfds = [];
+    cfds.append(None)
+
+    # Train models for all n-grams that could be used
+    for x in range(1, n+1):
+        # Create probability model
+        grams = create_model(tweets,x)
+        cfd = nltk.ConditionalFreqDist(grams)
+        cfds.append(cfd)
 
     # Init loop values
     last = [None]*n
@@ -77,41 +83,61 @@ def generate_tweet(hashtag):
     for i in range(50):
         as_tuple = tuple(last)
 
-        # Get the 10 most common successors for the current n last words
-        choices = cfd[as_tuple].most_common(10) 
-        if len(choices) == 0:
-            # Stop if no choices are available
-            # We want smoothing here!
-            break
+        found = False
+        # Start with a n-gram and decrease to 2-gram if no word was found
+        for k in range (n, 1, -1):
+            if found:
+                break;
+            # Get the 10 most common successors for the current n last words
+            choices = cfds[k][as_tuple].most_common(2000)
+            #new_word = random.choice(choices)[0] #Get a random successor
 
-        # Tries to find a plagiary substring choice 20 times 
-        for j in range(20):
-            new_word = random.choice(choices)[0] #Get a random successor
+            #print(len(choices))
+            #if len(choices) < 2:
+             #   continue
+            #if all(occ[1] < 10 for occ in choices):
+            #   continue
+            if len(choices) > 0:
+                # Stop if no choices are available
+                # We want smoothing here!
+                #break
 
-            # Special case - only allow sentences to beging with
-            # alphabetical characters or hashtags
-            if len(sentence) == 0 and re.sub("#","",new_word).isalpha():
-                break
-
-            # When the substring length for plagiary check is reached
-            # start check the sentence.
-            if len(sentence) >= check_length:
-                if new_word == None:
-                    if choices[0][0] == None:
-                        # Only end tweet if it is the most popular alternative
-                        continue
-                    if not is_copy(" ".join(sentence),tweets):
-                        # If the entire sentence is unique, allow it.
+                # Tries to find a plagiary substring choice 20 times 
+                for j in range(20):
+                    if found:
                         break
-                elif not is_copy(" ".join((sentence+[new_word])[-check_length:]),tweets):
-                    # If the number of words given by check_length is not a substring of
-                    # any tweet, allow the choice.
-                    break
+                    new_word = random.choice(choices)[0] #Get a random successor
+
+                    # Special case - only allow sentences to beging with
+                    # alphabetical characters or hashtags
+                    if len(sentence) == 0 and re.sub("#","",new_word).isalpha():
+                        found = True
+
+                    # When the substring length for plagiary check is reached
+                    # start check the sentence.
+                    if len(sentence) >= check_length:
+                        if new_word == None:
+                            if choices[0][0] == None:
+                                # Only end tweet if it is the most popular alternative
+                                found = True
+                            if not is_copy(" ".join(sentence),tweets):
+                                # If the entire sentence is unique, allow it.
+                                found = True
+                        elif not is_copy(" ".join((sentence+[new_word])[-check_length:]),tweets):
+                            # If the number of words given by check_length is not a substring of
+                            # any tweet, allow the choice.
+                            found = True
+
+            print("N-gram used: ")
+            print(k)
 
         if new_word == None:
             #End of tweet was selected, abort appending
             break
 
+        print("N-gram used: ")
+        print(k)
+        print(i,k,j,new_word, len(sentence))
         #Append to sentence and update last n-gram
         sentence.append(new_word)
         last = last[1:]
@@ -148,9 +174,14 @@ def read_file(hashtag):
         lines = f.read().splitlines()
     return lines
 
+def produce_word(last, cfds):
+    return word;
+
+
+
 tweets = []
-while len(tweets) < 10:
-    cpy,chars,tweet = generate_tweet("happy")
+while len(tweets) < 1:
+    cpy,chars,tweet = generate_tweet("hockey")
     if not cpy and chars > 30 and chars < 141:
         tweets.append(tweet)
 for t in tweets:
