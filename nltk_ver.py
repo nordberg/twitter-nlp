@@ -14,10 +14,22 @@ if HYBRID:
 #STANFORD AND JAVA SETUP
 #nltk.internals.config_java('C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin')
 #nltk.internals.config_java()
+<<<<<<< HEAD
 #os.environ['JAVAHOME'] = 'C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin'
 os.environ['JAVAHOME'] = '/home/marcus/Downloads/jdk1.8.0_60/jre/bin'
 path_to_model = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'models'+os.path.sep+'english-left3words-distsim.tagger'
 path_to_jar = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'stanford-postagger.jar'
+=======
+nltk.internals.config_java("C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin")
+os.environ['JAVAHOME'] = "C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin"
+path_to_model = os.getcwd()+'\\stanford-postagger-2015-04-20\\models\\english-left3words-distsim.tagger'
+path_to_jar = os.getcwd()+'\\stanford-postagger-2015-04-20\\stanford-postagger.jar'
+
+#nltk.internals.config_java('C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin')
+#os.environ['JAVAHOME'] = 'C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin'
+#path_to_model = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'models'+os.path.sep+'english-left3words-distsim.tagger'
+#path_to_jar = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'stanford-postagger.jar'
+>>>>>>> b2f074ca20ce607765cf54d4cf16e787b61af7e6
 
 
 stanford = StanfordPOSTagger(path_to_model,path_to_jar)
@@ -251,8 +263,8 @@ def next_word(tweets,cfd,knd,sgt, grammar,freq1,last,sentence,n,g_n,hashtag,top_
             if sentence[-2] in ['.',',','?','!']:
                 new_gram = [""]*(n-1)+[sentence[-1]]
                 choices,best_grammar = most_common(cfd,grammar,new_gram,sentence,top_choices,g_n)
-            if len(choices) == 0:
-                choices,best_grammar = most_common(freq1,grammar,[sentence[-1]],sentence,top_choices,g_n)
+                if len(choices) == 0:
+                    choices,best_grammar = most_common(freq1,grammar,[sentence[-1]],sentence,top_choices,g_n)
         if len(choices) == 0:
             # Stop if no choices are available
             # We want smoothing here!
