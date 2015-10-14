@@ -3,14 +3,17 @@ import sys
 import random
 import nltk_ver
 
-nr_of_tweets = 3
+if len(sys.argv) > 1:
+	nr_of_tweets = int(sys.argv[1])
+else:
+	nr_of_tweets = 30
 
 def main():
 	print('Hello and welcome to this test! You will be presented ' + str(nr_of_tweets) + ' tweets. ' + \
 		'Please type \'C\' or \'c\' if you think it is a computer generated tweet and \'H\' or \'h\' ' + \
 		'if you think it is a tweet written by a human. Please note that it is not guaranteed that it' + \
 		' is an even distribution of the two.')
-	print('-----------------------------------')
+	print('------------- %s Tweets incoming! ----------------------'%nr_of_tweets)
 
 	import test_10x10_1
 	tweets = test_10x10_1.all_tweets
@@ -54,6 +57,9 @@ def main():
 	input()
 
 
-
+#    #how to use result:
+#    import results
+#    for a in results.answers: 
+#        print(a[0],a[1][0],a[1][1],a[1][2])
 if __name__ == '__main__':
 	main()
