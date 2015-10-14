@@ -14,12 +14,6 @@ if HYBRID:
 #STANFORD AND JAVA SETUP
 #nltk.internals.config_java('C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin')
 #nltk.internals.config_java()
-<<<<<<< HEAD
-#os.environ['JAVAHOME'] = 'C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin'
-os.environ['JAVAHOME'] = '/home/marcus/Downloads/jdk1.8.0_60/jre/bin'
-path_to_model = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'models'+os.path.sep+'english-left3words-distsim.tagger'
-path_to_jar = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'stanford-postagger.jar'
-=======
 nltk.internals.config_java("C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin")
 os.environ['JAVAHOME'] = "C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin"
 path_to_model = os.getcwd()+'\\stanford-postagger-2015-04-20\\models\\english-left3words-distsim.tagger'
@@ -376,13 +370,6 @@ if __name__ == '__main__':
     generate_database(hashtags,"test_10x10_1")
     '''tweets = []
     while len(tweets) < 20:
-<<<<<<< HEAD
         tweet = get_tweet("dude")
         tweets.append(tweet)
         print(tweet)'''
-=======
-        cpy,chars,tweet = generate_tweet("obama")
-        if not cpy and chars > 30 and chars < 141 and tweet not in tweets:
-            tweets.append(tweet)
-            print(tweet)
->>>>>>> 72fedeefd9b515b4c673962f15ef52808e91482c
