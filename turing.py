@@ -1,7 +1,6 @@
 import os
 import sys
 import random
-import nltk_ver
 
 if len(sys.argv) > 1:
 	nr_of_tweets = int(sys.argv[1])
