@@ -370,9 +370,9 @@ def fill_human_tweets(hashtag,n):
 if __name__ == '__main__':
     #"Apple","coding","dude","halloween","happy",
     hashtags = ["Apple","coding","dude","halloween","happy","hockey","news","obama","random","weird"]
-    generate_database(hashtags,"test_10x10_1.py",10)
-    '''tweets = []
+    #generate_database(hashtags,"test_10x10_1.py",10)
+    tweets = []
     while len(tweets) < 20:
         tweet = get_tweet("dude")
         tweets.append(tweet)
-        print(tweet)'''
+        print(tweet)
