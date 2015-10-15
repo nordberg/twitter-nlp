@@ -11,11 +11,20 @@ HYBRID = True
 if HYBRID:
     LOWER_CASE = False
 
+# WINDOWS
+windows_java_path = "C:"+os.path.sep+"Program Files (x86)"+os.path.sep+"Java"+os.path.sep+"jre1.8.0_60"+os.path.sep+"bin"
+
+# LINUX
+linux_java_path = os.path.sep+'home'+os.path.sep+'marcus'+os.path.sep+'Downloads'+os.path.sep+'jdk1.8.0_60'+os.path.sep+'bin'
+
 #STANFORD AND JAVA SETUP
 #nltk.internals.config_java('C:'+os.path.sep+'Program Files (x86)'+os.path.sep+'Java'+os.path.sep+'jre1.8.0_60'+os.path.sep+'bin')
 #nltk.internals.config_java()
-nltk.internals.config_java("C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin")
-os.environ['JAVAHOME'] = "C:\\Program Files (x86)\\Java\\jre1.8.0_60\\bin"
+nltk.internals.config_java()
+if os.name == 'posix':
+    os.environ['JAVAHOME'] = linux_java_path
+elif os.name == 'nt':
+    os.environ['JAVAHOME'] = windows_java_path
 path_to_model = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'models'+os.path.sep+'english-left3words-distsim.tagger'
 path_to_jar = os.getcwd()+os.path.sep+'stanford-postagger-2015-04-20'+os.path.sep+'stanford-postagger.jar'
 
