@@ -43,7 +43,7 @@ total[2] /= len(human_tweets)
 total[3] /= len(comp_tweets)
 
 error_total = pd.DataFrame(np.array([total]),columns=['C Human','C AI','E Human','E AI'])
-errors = pd.DataFrame(np.array([v[2:] for v in values]),columns=['Error Human','Error AI'],index=hashtags_order)
+errors = pd.DataFrame(np.array([v[2:] for v in values]),columns=['AI guess on Human (%)','Human guess on AI (%)'],index=hashtags_order)
 error_plot = errors.plot(kind='bar',color = ['b','g','grey','r'])
 error_plot.plot([-1, 10], [total[2]]*2, color='b', linestyle='-', linewidth=2)
 error_plot.plot([-1, 10], [total[3]]*2, color='g', linestyle='-', linewidth=2)
