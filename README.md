@@ -31,6 +31,9 @@ results_analysis.py		creates a summary of the result data from the test
 results.py 				Data file. Contains the raw result data from the Turing test
 tweet_[hashtag]			Data files. Contains the hashtags collected from Twitter
 
+Map:
+stanford-postagger-2015-04-20	Used for grammar tagging
+
 				
  
 
