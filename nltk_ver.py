@@ -128,18 +128,18 @@ def extra_trim(tweet):
 
 def to_grammar(word):
 	'''Returns the grammar tag for a specific word'''
-    if word == '':
-        return ''
-    if single_grammar_cache.get(word):
-        word_g = single_grammar_cache[word]
-    else:
-        try:
-            word_g = stanford.tag(word)[1]
-        except IndexError as e:
-            print(e)
-            return ''
-        single_grammar_cache[word] = word_g
-    return word_g
+	if word == '':
+		return ''
+	if single_grammar_cache.get(word):
+		word_g = single_grammar_cache[word]
+	else:
+		try:
+			word_g = stanford.tag(word)[1]
+		except IndexError as e:
+			print(e)
+			return ''
+		single_grammar_cache[word] = word_g
+	return word_g
 
 def white_space_puncation(tweet):
     tweet = re.sub(r"([\\,\\.\\?\\!])(\S)",r'\1 \2',tweet)
@@ -176,70 +176,70 @@ def get_n_gram(tweets,hashtag,n):
         return grams
 
 def generate_tweet(hashtag):
-'''Main method for generating tweets. Also performs smoothing and grammar.'''
+	'''Main method for generating tweets. Also performs smoothing and grammar.'''
     # Settings
-    n = 2
-    g_n = 5
+	n = 2
+	g_n = 5
 
     # Gather the tweets
-    tweets = [extra_trim(white_space_puncation(t)) for t in read_file(hashtag)]
-    if LOWER_CASE: tweets = [t.lower() for t in tweets]
+	tweets = [extra_trim(white_space_puncation(t)) for t in read_file(hashtag)]
+	if LOWER_CASE: tweets = [t.lower() for t in tweets]
 
     # Create Grammar
-    if grammar_cache.get(hashtag):
-        g_grams = grammar_cache[hashtag]
-    else:
-        print('Creating grammar')
-        g_grams = get_grammar_ngrams(tweets,g_n)
-        grammar_cache[hashtag] = g_grams
-        print('Grammar done')
+	if grammar_cache.get(hashtag):
+		g_grams = grammar_cache[hashtag]
+	else:
+		print('Creating grammar')
+		g_grams = get_grammar_ngrams(tweets,g_n)
+		grammar_cache[hashtag] = g_grams
+		print('Grammar done')
 
     #Create n-gram model
-    grams = get_n_gram(tweets,hashtag,n)
-    gram1 = get_n_gram(tweets,hashtag,1)
-    freq1 = nltk.ConditionalFreqDist(gram1)
+	grams = get_n_gram(tweets,hashtag,n)
+	gram1 = get_n_gram(tweets,hashtag,1)
+	freq1 = nltk.ConditionalFreqDist(gram1)
 
-    #3gram for smoothing
-    if n != 3:
-        grams3 = get_n_gram(tweets,hashtag,3)
-    else:
-        grams3 = grams
+	#3gram for smoothing
+	if n != 3:
+		grams3 = get_n_gram(tweets,hashtag,3)
+	else:
+		grams3 = grams
     
     # Create probability model
-    cfd = nltk.ConditionalFreqDist(grams)
-    grammar = nltk.ConditionalFreqDist(g_grams)
-    fqd = nltk.FreqDist()
+	cfd = nltk.ConditionalFreqDist(grams)
+	grammar = nltk.ConditionalFreqDist(g_grams)
+	fqd = nltk.FreqDist()
  
-    for g in grams3:
-        fqd[g[0]] += 1
+	for g in grams3:
+		fqd[g[0]] += 1
 
-    knd = nltk.probability.KneserNeyProbDist(fqd)
-    sgt = nltk.probability.SimpleGoodTuringProbDist(fqd)
+	knd = nltk.probability.KneserNeyProbDist(fqd)
+	sgt = nltk.probability.SimpleGoodTuringProbDist(fqd)
 
     # Init loop values
-    last = ['']*n
-    new_word = ''
-    sentence = []
+	last = ['']*n
+	new_word = ''
+	sentence = []
 
-    #Each iteration produces 1 word
-    for i in range(50):
-        new_word = next_word(tweets,cfd,knd,sgt,grammar,freq1,last,sentence,n,g_n,hashtag)
-        if new_word == '':
+	#Each iteration produces 1 word
+	for i in range(50):
+		new_word = next_word(tweets,cfd,knd,sgt,grammar,freq1,last,sentence,n,g_n,hashtag)
+		if new_word == '':
             #End of tweet was selected, abort appending
-            break
+			break
 
         #Append to sentence and update last n-gram
-        sentence.append(new_word)
-        last = last[1:]
-        last.append(new_word)
+		sentence.append(new_word)
+		last = last[1:]
+		last.append(new_word)
 
-    sent = ' '.join(sentence)
+	sent = ' '.join(sentence)
 
-    # Make some symbol correction
-    corr_sent = fix_tweet(sent)
+	# Make some symbol correction
+	corr_sent = fix_tweet(sent)
 
     #print the result
-    return (is_copy(sent,tweets),len(sent),corr_sent)
+	return (is_copy(sent,tweets),len(sent),corr_sent)
 
 def most_common(cfd, grammar, n_gram, sentence, top_choices, g_n):
     if HYBRID:
