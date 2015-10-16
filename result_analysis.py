@@ -2,7 +2,6 @@ import results
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import linregress
 results = results.answers
 
 human_tweets = [t for t in results if t[1][0]]

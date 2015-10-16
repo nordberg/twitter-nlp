@@ -39,31 +39,17 @@ def get_tweets(hashtag, tweetCount):
 		else:
 			results = twitter.search(q=hashtag, count=tweetCount - len(tweets), lang='en', include_entities='true', max_id=next_max_id)
 		
-			
 		for result in results['statuses']:
-		
-			
-		
 			
 			tweet = str(result['text'].encode(sys.stdout.encoding, errors='ignore'))
-			
-			#counter+=1
-			#if counter < 10 :
-			#	print("original tweet:")
-			#	print ("*", tweet)
-			
 			#Remove poster's address
 			tweet = re.sub('@[A-Za-z_0-9:]+ ', ' ', str(result['text'].encode(sys.stdout.encoding, errors='ignore')))
-			
-			
-			
-		
+	
 			#Removal of special Twitter symbols
 			tweet = re.sub('(RT|RT |RT:|RT :|RT  :)', '', tweet)
 			tweet = re.sub('b\'', '', tweet)
 			tweet = re.sub('b"', '', tweet)
-			
-			
+
 			tweet = re.sub('\w\\?\\[A-Za-z0-9]* ', ' ', tweet)
 			tweet = re.sub('&amp;', ' ', tweet)
 			tweet = re.sub('&gt', '>', tweet)
@@ -76,17 +62,13 @@ def get_tweets(hashtag, tweetCount):
 			tweet = re.sub('\s\s+', ' ', tweet)
 			tweet = tweet.strip() #Removes all leading and ending spaces
 			
+			#Remove ' and " at the end of a tweet
 			if(tweet[-1]=='\'' or tweet[-1]=='"'):
 				tweet = tweet[:len(tweet)-1]
 			
 			tweets.append(tweet.strip())
 			corpora += tweet
 
-			
-			#if counter < 10 :
-			#	print ("*",tweet)
-			#for word in tweet.split():
-			#	wordCnt[word] += 1
 
 		try:
 			next_results_url_params = results['search_metadata']['next_results']
