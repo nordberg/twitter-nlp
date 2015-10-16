@@ -6,6 +6,14 @@ import re
 import platform
 from nltk.tag import StanfordPOSTagger
 
+'''
+Main program for text generation
+Also does smoothing and grammar filtering
+generate_tweet is the main method which performs all parts for the generation
+'''
+
+
+
 LOWER_CASE = False
 HYBRID = True
 if HYBRID:
@@ -115,12 +123,11 @@ def is_copy(tweet, database):
 
 def extra_trim(tweet):
     '''Makes small hacks on the tweets'''
-  #  if(tweet[-1] == '\''):
-  #      tweet = tweet[:-1]
     tweet = re.sub('\\n',' ',tweet)
     return tweet
 
 def to_grammar(word):
+	'''Returns the grammar tag for a specific word'''
     if word == '':
         return ''
     if single_grammar_cache.get(word):
@@ -169,7 +176,7 @@ def get_n_gram(tweets,hashtag,n):
         return grams
 
 def generate_tweet(hashtag):
-
+'''Main method for generating tweets. Also performs smoothing and grammar.'''
     # Settings
     n = 2
     g_n = 5
