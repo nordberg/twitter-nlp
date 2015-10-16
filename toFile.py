@@ -39,9 +39,9 @@ if __name__ == '__main__':
 			f = open(filename,'a')
 	except TwythonRateLimitError:
 		print ("Rate limit error")
-		print( twitter.get_lastfunction_header('x-rate-limit-limit'))
-		print( twitter.get_lastfunction_header('x-rate-limit-remaining'))
-		print( twitter.get_lastfunction_header('x-rate-limit-class'))
-		print( twitter.get_lastfunction_header('x-rate-limit-reset'))
+		#print( twitter.get_lastfunction_header('x-rate-limit-limit'))
+		#print( twitter.get_lastfunction_header('x-rate-limit-remaining'))
+		#print( twitter.get_lastfunction_header('x-rate-limit-class'))
+		#print( twitter.get_lastfunction_header('x-rate-limit-reset'))
 		sys.exit()
 	#f.close()
