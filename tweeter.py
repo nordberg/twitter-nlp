@@ -16,10 +16,10 @@ client_args = {
 	}
 }
 
-APP_KEY = 'BDFjwtDbPqCT07N6k4h6yaK9D'  # Customer Key here
-APP_SECRET = 'DaNCLGNlw1sOuZrlBUTGoRPW99pH3vlkhQuxOTJXUherwPwtZY'
-ACCESS_TOKEN = '335495642-WkhVdvjhipAWAbbqHrK0aWcOY7fIUC1ARynhEbit'
-ACCESS_SECRET = 'dzo6CLq2JY6WNSooINBEl0yH5AYpdHcYq12Y2CXKALN7I'
+APP_KEY = ''  # Customer Key here
+APP_SECRET = ''
+ACCESS_TOKEN = ''
+ACCESS_SECRET = ''
 
 def get_tweets(hashtag, tweetCount):
 	twitter = Twython(APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
